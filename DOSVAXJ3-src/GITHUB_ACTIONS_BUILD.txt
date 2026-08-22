@@ -1,0 +1,11 @@
+DOSVAXJ3 32枚版をGitHub Actionsでビルドするためのファイルを追加済みです。
+
+1. このフォルダ一式をGitHubの新しいリポジトリへアップロード。
+2. GitHub上で Actions タブを開く。
+3. 左側の "Build DOSVAXJ3 x64 (32 floppy slots)" を選ぶ。
+4. "Run workflow" を押す。
+5. 完了後、実行結果ページ下部の Artifacts から
+   "DOSVAXJ3-x64-32disks" をダウンロード。
+
+include/bios_disk.h の MAX_SWAPPABLE_DISKS が32でない場合は、
+workflowが最初の段階で停止するようにしてあります。
