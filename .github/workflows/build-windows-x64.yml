@@ -40,6 +40,13 @@ jobs:
           $sln = Join-Path $libRoot 'SDL-IM-plus\VisualC\SDL.sln'
           msbuild $sln /m /p:Configuration=Release /p:Platform=x64
 
+      - name: Build zlib
+        shell: pwsh
+        run: |
+          git clone --depth 1 https://github.com/madler/zlib.git zlib-src
+          cmake -S zlib-src -B zlib-build -A x64
+          cmake --build zlib-build --config Release --target zlibstatic
+
       - name: Collect headers and static/import libraries
         shell: pwsh
         run: |
@@ -82,7 +89,13 @@ jobs:
 
           $vlib = Join-Path $triplet 'lib'
           Copy-FirstLib @("$vlib\SDL_net.lib", "$vlib\sdl_net.lib") 'sdl_net.lib'
-          Copy-FirstLib @("$vlib\zlib.lib") 'zlib.lib'
+          Copy-FirstLib @(
+            "$env:GITHUB_WORKSPACE\zlib-build\Release\zlibstatic.lib",
+            "$env:GITHUB_WORKSPACE\zlib-build\Release\zlib.lib"
+          ) 'zlib.lib'
+
+          Copy-Item "$env:GITHUB_WORKSPACE\zlib-src\zlib.h" $inc -Force
+          Copy-Item "$env:GITHUB_WORKSPACE\zlib-build\zconf.h" $inc -Force
           Copy-FirstLib @("$vlib\libpng16.lib", "$vlib\libpng.lib", "$vlib\*png*.lib") 'libpng.lib'
           Copy-FirstLib @("$vlib\pdcurses.lib", "$vlib\*pdcurses*.lib") 'pdcurses.lib'
 
