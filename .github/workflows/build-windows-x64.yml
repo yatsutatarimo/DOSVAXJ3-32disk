@@ -82,7 +82,21 @@ jobs:
 
           $vlib = Join-Path $triplet 'lib'
           Copy-FirstLib @("$vlib\SDL_net.lib", "$vlib\sdl_net.lib") 'sdl_net.lib'
-          Copy-FirstLib @("$vlib\zlib.lib", "$vlib\zlibstatic.lib") 'zlib.lib'
+          $zlibFile = Get-ChildItem -Path $triplet -Recurse -File |
+            Where-Object {
+              $_.Name -match '^zlib.*\.lib$' -and
+              $_.FullName -notmatch '\\debug\\'
+            } |
+            Select-Object -First 1
+          if (-not $zlibFile) {
+            Write-Host 'Available zlib-related files:'
+            Get-ChildItem -Path $triplet -Recurse -File |
+              Where-Object { $_.Name -match 'zlib|zlibstatic' } |
+              ForEach-Object { Write-Host $_.FullName }
+            throw 'Could not find release zlib library'
+          }
+          Copy-Item $zlibFile.FullName (Join-Path $lib 'zlib.lib') -Force
+          Write-Host "zlib.lib <= $($zlibFile.FullName)" 
           Copy-FirstLib @("$vlib\libpng16.lib", "$vlib\libpng.lib", "$vlib\*png*.lib") 'libpng.lib'
           Copy-FirstLib @("$vlib\pdcurses.lib", "$vlib\*pdcurses*.lib") 'pdcurses.lib'
 
